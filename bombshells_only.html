@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #fff5f8; font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+
+  /* ── HERO ── */
+  .hero {
+    background: #fff;
+    padding: 52px 24px 36px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 3px solid #ff3f8e;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 10% 80%, rgba(255,63,142,0.10) 0%, transparent 55%),
+      radial-gradient(ellipse at 90% 20%, rgba(255,165,0,0.10) 0%, transparent 55%);
+  }
+  .show-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px; letter-spacing: 5px; text-transform: uppercase;
+    color: #ff3f8e; margin-bottom: 10px; position: relative; font-weight: 500;
+  }
+  .chat-name {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(42px, 9vw, 80px);
+    font-weight: 800; color: #1a1a1a;
+    line-height: 1; position: relative; letter-spacing: -1px;
+  }
+  .divider {
+    width: 48px; height: 3px;
+    background: linear-gradient(90deg, #ff3f8e, #ff8c00);
+    margin: 16px auto; border-radius: 2px; position: relative;
+  }
+  .tagline {
+    font-size: 13px; color: #888; font-style: italic;
+    letter-spacing: 0.3px; position: relative;
+  }
+
+  /* ── FILTER BAR ── */
+  .filter-bar {
+    display: flex; gap: 8px; justify-content: center;
+    flex-wrap: wrap; padding: 16px 16px;
+    background: #fff; border-bottom: 1px solid #ffe0ee;
+  }
+  .filter-btn {
+    padding: 7px 18px; border-radius: 40px;
+    border: 1.5px solid #ffb3d1;
+    background: transparent; color: #cc2266;
+    font-size: 12px; font-family: 'DM Sans', sans-serif;
+    cursor: pointer; transition: all 0.2s;
+    letter-spacing: 0.2px; font-weight: 500;
+  }
+  .filter-btn:hover, .filter-btn.active {
+    background: linear-gradient(135deg, #ff3f8e, #ff8c00);
+    border-color: transparent; color: #fff; font-weight: 700;
+  }
+
+  /* ── GRID ── */
+  .grid-container {
+    max-width: 1200px; margin: 0 auto;
+    padding: 32px 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 22px;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: #fff; border-radius: 20px;
+    overflow: hidden;
+    border: 1.5px solid #ffe0ee;
+    transition: transform 0.3s, box-shadow 0.3s;
+    position: relative;
+    box-shadow: 0 2px 16px rgba(255,63,142,0.07);
+  }
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 16px 48px rgba(255,63,142,0.18);
+  }
+  .card.hidden { display: none; }
+
+  /* ── PHOTO ── */
+  .photo-wrap { position: relative; width: 100%; height: 560px; overflow: hidden; }
+  .photo-wrap img { width: 100%; height: 100%; object-fit: cover; object-position: center center; display: block; }
+  .photo-placeholder { display: flex; align-items: center; justify-content: center; color: #fff; font-family: 'Syne', sans-serif; font-size: 64px; font-weight: 800; }
+
+
+  .card-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px; font-weight: 800;
+    color: #1a1a1a; line-height: 1; letter-spacing: -0.5px;
+  }
+  .meta-row { display: flex; gap: 5px; margin-top: 6px; flex-wrap: wrap; }
+  .badge {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.2px; padding: 3px 8px; border-radius: 20px;
+  }
+  .badge.age   { color: #ff3f8e; background: rgba(255,63,142,0.10); }
+  .badge.city  { color: #e67e00; background: rgba(255,140,0,0.10); }
+  .badge.conn  { color: #cc2266; background: rgba(204,34,102,0.08); }
+  .mc-badge {
+    position: absolute; top: 14px; right: 14px; z-index: 3;
+    font-size: 9px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #ff3f8e, #ff8c00);
+    color: #fff; padding: 3px 9px; border-radius: 20px;
+    box-shadow: 0 2px 10px rgba(255,63,142,0.35);
+  }
+
+  /* ── CARD BODY ── */
+  .card-body { padding: 16px 18px 0; }
+  .narrator {
+    font-size: 12.5px; color: #777;
+    font-style: italic; line-height: 1.65;
+    margin-bottom: 12px;
+  }
+
+  /* ── FACTS — no bullets, just spaced lines ── */
+  .facts { display: none; }
+
+
+  /* ── CARD BOTTOM ── */
+  .card-bottom {
+    padding: 12px 18px 14px;
+    border-top: 1.5px solid #fff0f5;
+    display: flex; align-items: center;
+    justify-content: space-between; gap: 8px;
+  }
+  .phone {
+    font-size: 13px; font-weight: 600;
+    letter-spacing: 0.3px; color: #ff3f8e;
+    font-variant-numeric: tabular-nums;
+  }
+  .save-btn {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.4px; text-transform: uppercase;
+    padding: 6px 14px; border-radius: 40px; border: none;
+    cursor: pointer; transition: all 0.2s;
+    background: linear-gradient(135deg, #ff3f8e, #ff8c00);
+    color: #fff;
+  }
+  .save-btn:hover { transform: scale(1.04); box-shadow: 0 3px 14px rgba(255,63,142,0.35); }
+  .save-btn.saved { background: linear-gradient(135deg, #00c896, #00a67e); }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center; padding: 28px 16px 44px;
+    color: #ccc; font-size: 11.5px;
+    font-style: italic; letter-spacing: 0.4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="show-title">🌴 the official group chat directory 🌴</div>
+  <div class="chat-name">Bombshells Only</div>
+  <div class="divider"></div>
+  <div class="tagline">"It's official. The villa has never looked this good."</div>
+</div>
+
+<div class="filter-bar">
+  <button class="filter-btn active" onclick="filter('all',this)">All Bombshells</button>
+  <button class="filter-btn" onclick="filter('grace',this)">Grace's Circle</button>
+  <button class="filter-btn" onclick="filter('nora',this)">Nora's Circle</button>
+  <button class="filter-btn" onclick="filter('nick',this)">Nick's Circle</button>
+  <button class="filter-btn" onclick="filter('family',this)">Family</button>
+</div>
+
+<div class="grid-container" id="grid"></div>
+<div class="footer">💛 tap "save number" to download a contact · love island villa, summer 2026 💛</div>
+
+<script>
+const data = [
+  {
+    name:"Grace",age:27,city:"Philly",phone:"908-380-4268",
+    gradient:"linear-gradient(135deg,#f7c948,#ff6b6b)",
+    photo:"https://i.imgur.com/placeholder.jpg",
+    photoData: null,
+    connection:"Main Character",tags:["grace","family"],mc:true,
+    narrator:"She made the group chat, she set the rules, and she started watching Love Island before it was cool — back in summer 2018. Philadelphia's finest has entered the villa, and honestly? She's been ready for this moment for years.",
+    facts:[
+      {i:"📺",t:"OG Love Island viewer since summer 2018 — she was there before it was cool"},
+      {i:"🎮",t:"Works at a gaming startup"},
+      {i:"👑",t:"Created this group chat. Bow down."}
+    ]
+  },
+  {
+    name:"Nora",age:25,city:"Chicago",phone:"(908) 377-9335",
+    gradient:"linear-gradient(135deg,#51cf66,#20c997)",
+    connection:"Grace's Sister",tags:["grace","family"],
+    narrator:"She knows how to pitch a winner, manage a massive ego, and tell a boy when he's completely out of bounds. She volunteers at a dog rescue, so she's highly experienced at dealing with cute but incredibly poorly behaved creatures — which will honestly come in very handy with this current lot of lads.",
+    facts:[
+      {i:"📣",t:"Works in sports marketing — expert at managing massive egos"},
+      {i:"🐶",t:"Volunteers at a dog rescue (experience with poorly behaved creatures)"},
+      {i:"📅",t:"Give her a fully booked hotspot on a Friday night and she will get you a table in seconds"}
+    ]
+  },
+  {
+    name:"Nick",age:21,city:"DC",phone:"(908) 370-8826",
+    gradient:"linear-gradient(135deg,#4158d0,#c850c0)",
+    connection:"Grace's Brother",tags:["grace","family"],
+    narrator:"He's just spent the last four months in Florence — so he's fluent in Italian, thinks he's a connoisseur of red wine, and will absolutely try to explain the concept of \"dolce far niente\" while you're just trying to eat your morning toast. By day, he's crunching numbers as a finance intern. By night? He's spinning tracks as a DJ. Let's just hope his chat is better than his drops.",
+    facts:[
+      {i:"🎓",t:"Junior at Ohio State"},
+      {i:"🇮🇹",t:"Just returned from studying abroad in Florence — will tell you about it immediately"},
+      {i:"💼",t:"Finance intern by day, DJ by night"}
+    ]
+  },
+  {
+    name:"Sam",age:27,city:"Boston",phone:"(309) 660-8996",
+    gradient:"linear-gradient(135deg,#66d9e8,#4158d0)",
+    connection:"Grace's Boyfriend",tags:["grace"],
+    narrator:"He's doing a PhD at Johns Hopkins in biostatistics — sounds incredibly impressive, but honestly, nobody knows what it means. This summer he's interning at Novo Nordisk. Yes, girls, he's swimming in that sweet, sweet Ozempic money. He's also a talented cellist, which is very classy... but his real party trick? He can recite the entire movie Chicken Run from absolute memory.",
+    facts:[
+      {i:"💉",t:"Interning at Novo Nordisk — swimming in that Ozempic money 💰"},
+      {i:"📊",t:"PhD student at Hopkins in biostatistics (nerd)"},
+      {i:"🎻",t:"Cellist who can recite Chicken Run from absolute memory. A man of range."}
+    ]
+  },
+  {
+    name:"Harker",age:21,city:"Boston",phone:"(614) 625-3509",
+    gradient:"linear-gradient(135deg,#c850c0,#ff6b6b)",
+    connection:"Nick's Girlfriend",tags:["nick"],
+    narrator:"By day, she's an engineering intern at Accenture, absolutely crushing it for the women in STEM. By weekend? She literally works as a professional mermaid and princess for children's birthday parties. So she's highly qualified at dealing with royal drama, wearing heavy crowns, and swimming away from toxic situations.",
+    facts:[
+      {i:"💻",t:"Engineering intern at Accenture — women in STEM 💪"},
+      {i:"🧜‍♀️",t:"Professional mermaid and princess for children's parties on weekends"},
+      {i:"👑",t:"Qualified at royal drama, heavy crowns, and swimming away from toxicity"}
+    ]
+  },
+  {
+    name:"Margaret",age:30,city:"Philly",phone:"(610) 675-5640",
+    gradient:"linear-gradient(135deg,#ff9f7f,#f7c948)",
+    connection:"Cousin",tags:["grace","family"],
+    narrator:"She's ready to bill these boys by the hour! She works as a high-flying consultant — expert at looking at a complete mess and telling you exactly how to fix it. Expect the boys' grafting strategies to get a serious presentation deck by Tuesday. Oh, and she's completely double-jointed. But as a youth, she suffered from a severe phobia of... Michael Jackson. So if any of these lads try to Thriller dance their way into her bed, they'll be on the daybeds instantly.",
+    facts:[
+      {i:"💼",t:"Consultant — will fix your entire life with a presentation deck"},
+      {i:"🤸",t:"Completely double jointed (a fantastic party trick for villa challenges)"},
+      {i:"😱",t:"Suffered a severe phobia of Michael Jackson as a youth. Do not Thriller dance near her."}
+    ]
+  },
+  {
+    name:"Rose",age:27,city:"Chicago",phone:"(908) 358-5727",
+    gradient:"linear-gradient(135deg,#ff6b6b,#c850c0)",
+    connection:"Grace's Friend from Home",tags:["grace"],
+    narrator:"She works in HR — if any of these boys try to play her, she will have them on a Performance Improvement Plan before they can even say \"it is what it is.\" She's also a new mum to her dog, Chickpea. But Rose is a woman of absolute mystery — she hasn't posted a single thing on Instagram since #BlackoutTuesday in 2020. She dropped the black square, whispered \"#ally,\" and completely logged out of the matrix. Absolute queen behavior.",
+    facts:[
+      {i:"💼",t:"Works in HR — PIP incoming if you try to play her"},
+      {i:"🐾",t:"New mum to a dog named Chickpea"},
+      {i:"✊",t:"Last Instagram post: Blackout Tuesday 2020. Has not returned to the matrix since."}
+    ]
+  },
+  {
+    name:"Olivia",age:26,city:"New Jersey",phone:"(908) 514-3737",
+    gradient:"linear-gradient(135deg,#f7c948,#51cf66)",
+    connection:"Grace's Friend from Home",tags:["grace"],
+    narrator:"She has literally just gotten married. Why is she in the villa? Who knows! Maybe she's just here for the free holiday and the drama. By day she's a speech therapist with the patience of a saint — and trust me, she's going to need it with the vocabulary of some of these boys. But Olivia's internet history is an absolute wild ride: Minecraft, Sailor Moon, and car crash videos on YouTube.",
+    facts:[
+      {i:"🗣️",t:"Speech therapist — has the patience of a saint (will need it)"},
+      {i:"💍",t:"Just got married!! Why is she here? Great question."},
+      {i:"🎮",t:"Unwinds with Minecraft, Sailor Moon, and car crash videos. A holy trinity."}
+    ]
+  },
+  {
+    name:"Jazreel",age:27,city:"San Francisco",phone:"(857) 361-2300",
+    gradient:"linear-gradient(135deg,#20c997,#4158d0)",
+    connection:"Grace's SF Friend",tags:["grace"],
+    narrator:"She works on Battlefield managing microtransactions — which means she is literally a professional at taking boys' money and giving them absolutely nothing of substance in return. Lethal. When she's not dominating the gaming world, she's saving the planet with a bit of climate activism, going out crabbing, and dropping serious cash on expensive sushi. Love that for her.",
+    facts:[
+      {i:"🎮",t:"Works on Battlefield microtransactions — professional at giving boys nothing of substance"},
+      {i:"🦀",t:"From Singapore; enjoys crabbing, climate activism, and expensive sushi"},
+      {i:"🌱",t:"Saving the earth while fully enjoying its finest and priciest seafood"}
+    ]
+  },
+  {
+    name:"Dmitri",age:21,city:"DC",phone:"(908) 868-3355",
+    gradient:"linear-gradient(135deg,#4158d0,#66d9e8)",
+    connection:"Nick's Friend from Home",tags:["nick"],
+    narrator:"He's just touched down after spending the last four months in Barcelona — so expect him to start every single sentence with \"When I was in Barça...\" while looking deep into your eyes. He's proud of his Greek heritage, which means he's got the gods on his side, and he works for Red Bull, so he's literally paid to bring the energy. Let's just hope he doesn't give these girls too many wings.",
+    facts:[
+      {i:"✈️",t:"Just back from studying abroad in Barcelona — will mention it constantly"},
+      {i:"🐂",t:"Works at Red Bull — literally paid to bring the energy"},
+      {i:"🇬🇷",t:"Greek. Has the gods on his side."}
+    ]
+  },
+  {
+    name:"Amaya",age:25,city:"Columbus",phone:"(614) 226-3059",
+    gradient:"linear-gradient(135deg,#ff9f7f,#c850c0)",
+    connection:"Nora's College Friend",tags:["nora"],
+    narrator:"Columbus born, Columbus raised, and the volleyball court is her natural habitat. She is not here to play. Except when she is.",
+    facts:[
+      {i:"🏐",t:"Volleyball coach"},
+      {i:"🏡",t:"Columbus born and raised — a true local legend"},
+      {i:"🎓",t:"Met Nora in college and has been iconic ever since"}
+    ]
+  },
+  {
+    name:"Uzi",age:25,city:"New Jersey",phone:"(908) 956-2023",
+    gradient:"linear-gradient(135deg,#66d9e8,#f7c948)",
+    connection:"Nora's Friend from Home",tags:["nora"],
+    narrator:"Data analyst. Former volleyball player. New Jersey native. She is analysing your serve and your entire personality simultaneously.",
+    facts:[
+      {i:"📊",t:"Data analyst at an insurance company"},
+      {i:"🏐",t:"Also played volleyball — this villa has a volleyball pipeline and we love it"},
+      {i:"🏡",t:"Jersey through and through"}
+    ]
+  }
+];
+
+const photos = {
+  "Grace": "photos/grace.jpg",
+  "Nora": "photos/nora.jpg",
+  "Nick": "photos/nick.jpg",
+  "Sam": "photos/sam.jpg",
+  "Harker": "photos/harker.jpg",
+  "Margaret": "photos/margaret.jpg",
+  "Rose": "photos/rose.jpg",
+  "Olivia": "photos/olivia.jpg",
+  "Jazreel": "photos/jazreel.jpg",
+  "Dmitri": "photos/dmitri.jpg",
+  "Uzi": "photos/uzi.jpg",
+  "Amaya": "photos/amaya.jpg",
+};
+
+// Store uploaded photos
+const uploadedPhotos = {};
+
+function buildCard(p) {
+  const photoSrc = uploadedPhotos[p.name];
+  const photoHTML = photoSrc
+    ? `<div class="photo-wrap">
+        <img src="${photoSrc}" alt="${p.name}" />
+        ${p.mc?'<span class="mc-badge">⭐ Main Character</span>':''}
+      </div>`
+    : `<div class="photo-wrap photo-placeholder" style="background:${p.gradient};">
+        <span style="font-size:64px;">${p.name[0]}</span>
+        ${p.mc?'<span class="mc-badge">⭐ Main Character</span>':''}
+      </div>`;
+
+  return `
+    <div class="card" data-tags="${p.tags.join(' ')}">
+      <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#ff3f8e,#ff8c00);z-index:2;border-radius:20px 20px 0 0;"></div>
+      ${photoHTML}
+      <div class="card-body">
+        <div class="card-name">${p.name}</div>
+        <div class="meta-row" style="margin-top:6px;margin-bottom:10px;">
+          <span class="badge age">${p.age}</span>
+          <span class="badge city">📍 ${p.city}</span>
+          <span class="badge conn">${p.connection}</span>
+        </div>
+        <p class="narrator">"${p.narrator}"</p>
+      </div>
+      <div class="card-bottom">
+        <span class="phone">${p.phone}</span>
+        <button class="save-btn" onclick="saveContact(this,'${p.name}','${p.phone.replace(/\D/g,'')}')">Save Number</button>
+      </div>
+    </div>`;
+}
+
+function saveContact(btn, name, digits) {
+  btn.textContent = '✓ Saved!';
+  btn.classList.add('saved');
+  setTimeout(()=>{ btn.textContent='Save Number'; btn.classList.remove('saved'); }, 2500);
+  const vcard = `BEGIN:VCARD\nVERSION:3.0\nFN:${name} (Bombshells Only)\nTEL:+1${digits}\nEND:VCARD`;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([vcard],{type:'text/vcard'}));
+  a.download = `${name}_BombshellsOnly.vcf`;
+  a.click();
+}
+
+function filter(tag, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.card').forEach(c=>{
+    c.classList.toggle('hidden', tag !== 'all' && !c.dataset.tags.includes(tag));
+  });
+}
+
+function renderGrid() {
+  document.getElementById('grid').innerHTML = data.map(buildCard).join('');
+}
+
+// Photo upload handler — exposed globally so Claude can call it
+window.addPhoto = function(name, base64DataUrl) {
+  uploadedPhotos[name] = base64DataUrl;
+  renderGrid();
+};
+
+// Pre-populate uploadedPhotos from embedded photo data
+Object.assign(uploadedPhotos, photos);
+renderGrid();
+</script>
+</body>
+</html>
